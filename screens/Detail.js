@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const DetailsScreen = ({ route, navigation }) => {
     const { item } = route.params;
     const [favorites, setFavorites] = useState([]);
+    // variabilise l'affichage du coeur et l'ajout au favoris mais je n'arrive pas a le set en arrivant sur la page, le titre n'est donc pas en favoris par defaut meme si il a été ajouté précédement
     const [isFavorite, setIsFavorite] = useState(false);
 
     const loadFavorites = async () => {
@@ -19,6 +20,7 @@ const DetailsScreen = ({ route, navigation }) => {
         }
     };
 
+    // sauvegarde les favoris dans le localStorage
     const saveFavorites = async (favorites) => {
         try {
             const jsonValue = JSON.stringify(favorites);
@@ -28,14 +30,19 @@ const DetailsScreen = ({ route, navigation }) => {
         }
     };
 
-    const addFavorite = (music) => {
-        const newFavorites = [...favorites, music];
-        setFavorites(newFavorites);
-        saveFavorites(newFavorites);
+    const addFavorite = (item) => {
+        // si le favoris existe deja, on ne l'ajoute pas
+        if (!favorites.some(favorite => favorite.trackId === item.trackId)) {
+            const newFavorites = [...favorites, item];
+            setFavorites(newFavorites);
+            saveFavorites(newFavorites);
+            setIsFavorite(true);
+        }
         setIsFavorite(true);
     }
 
     const removeFromFavorites = (item) => {
+        // on filtre les favoris sans prendre le favoris cible
         const newFavorites = favorites.filter(favorite => favorite.trackId !== item.trackId);
         setFavorites(newFavorites);
         saveFavorites(newFavorites);
@@ -60,7 +67,7 @@ const DetailsScreen = ({ route, navigation }) => {
             <Text style={styles.artist}>{item.artistName}</Text>
             <Text style={styles.album}>{item.collectionName}</Text>
             <Button
-                title="Go back to Home"
+                title="Retourner à l'acceuil"
                 onPress={() => navigation.navigate('Home')}
             />
         </View>
@@ -73,6 +80,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: '#121212'
     },
     image: {
         width: 100,
@@ -82,6 +90,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
+        color: '#fff',
     },
     artist: {
         fontSize: 20,

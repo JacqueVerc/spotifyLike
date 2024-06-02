@@ -1,25 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TextInput, Button, TouchableOpacity, Image } from 'react-native';
-import axios from 'axios';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// screens/Favoris.js
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Button } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const HomeScreen = ({ navigation }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [data, setData] = useState([]);
+const Favoris = ({ navigation }) => {
+    const [favorites, setFavorites] = useState([]);
 
-    const fetchData = async () => {
+    // Charge les favoris
+    useEffect(() => {
+        loadFavorites();
+    }, []);
+
+    // récupère les favoris du localStorage
+    const loadFavorites = async () => {
         try {
-            const response = await axios.get(`https://itunes.apple.com/search?term=${searchTerm}`);
-            setData(response.data.results);
+            const jsonValue = await AsyncStorage.getItem('@favorites');
+            if (jsonValue != null) {
+                setFavorites(JSON.parse(jsonValue));
+            }
         } catch (error) {
             console.error(error);
         }
     };
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
+    // Affichage d'un favoris
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.item}
@@ -35,16 +39,9 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Button title="Favoris" onPress={() => navigation.navigate('Favorites')} />
-            <TextInput
-                style={styles.input}
-                placeholder="Search for music"
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-            />
-            <Button title="Search" onPress={fetchData} />
+            <Text style={styles.header}>Mes Favoris</Text>
             <FlatList
-                data={data}
+                data={favorites}
                 keyExtractor={(item) => '' + item.trackId}
                 renderItem={renderItem}
             />
@@ -57,13 +54,13 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingTop: 40,
         paddingHorizontal: 20,
+        backgroundColor: '#121212'
     },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
+    header: {
+        fontSize: 24,
+        fontWeight: 'bold',
         marginBottom: 20,
-        paddingHorizontal: 10,
+        color: '#fff',
     },
     item: {
         flexDirection: 'row',
@@ -83,6 +80,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: 'bold',
+        color: '#fff',
     },
     artist: {
         fontSize: 16,
@@ -90,4 +88,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HomeScreen;
+export default Favoris;
